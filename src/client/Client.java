@@ -2,8 +2,9 @@ package client;
 
 import client.clientconnection.ClientConnection;
 import common.connection.Connection;
+import server.serverconnection.ServerConnection;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 
 public class Client {
@@ -14,7 +15,12 @@ public class Client {
         try {
             Socket socket = new Socket(this.host, this.port);
             System.out.println("Succesfuly connected to HFTP");
-            ClientConnection clientConnection = new ClientConnection(socket);
+
+            BufferedInputStream in = new BufferedInputStream(socket.getInputStream());
+            BufferedOutputStream out = new BufferedOutputStream((socket.getOutputStream()));
+
+
+            ClientConnection clientConnection = new ClientConnection(socket, in, out);
             clientConnection.communicate();
 
 

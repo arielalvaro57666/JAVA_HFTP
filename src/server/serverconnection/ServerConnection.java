@@ -4,51 +4,68 @@ import common.connection.Connection;
 import types.Commands;
 import types.ReturnCodes;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
+import java.util.Scanner;
 
 
 public class ServerConnection extends Connection {
     // We will use dataInput and Output Streams for simple messages
     // And Buffered Streams for files
-    // Client connection and server connection should inherate the connection class and extends their respective interfaces
 
-    public ServerConnection(Socket socket) throws IOException {
-        super(socket);
+    public final String directory = "/home/gusmoon/Documents/hftp";
+
+
+    public ServerConnection(Socket socket, BufferedInputStream in, BufferedOutputStream out) {
+        super(socket, in, out);
     }
 
-    private void sendStatus(ReturnCodes e) {
-        String status = e.getCode() + " " + e.getDescription();
-        this.sendMessage(status);
+    private String scan() {
+        Scanner scan = new Scanner(System.in);
+
+        return scan.nextLine();
     }
 
     public void menu(){
 
         while(true) {
-            this.sendMenu();
+            try {
+                this.sendMenu();
+                String request = this.receiveStringMessage();
 
-            String request = this.receiveMessage();
-            System.out.println("llego " + request);
-            Commands requestCommand = Commands.returnCommand(request.toUpperCase());
+                Commands requestCommand = Commands.returnCommand(request.toUpperCase());
+                System.out.println("Receive "+ requestCommand);
+                switch(requestCommand) {
 
-            switch(requestCommand) {
+                    case LIST:
 
-                case LIST_DIRECTORY:
-                    this.listDirectory();
+                        this.listDirectory();
+                        break;
 
-                case DOWNLOAD_FILE:
-                    this.upload();
 
-                case UPLOAD_FILE:
-                    this.download();
+                    case DOWNLOAD:
+                        //this.upload();
+                        break;
 
-                case QUIT:
-                    this.closeConnection();
+                    case UPLOAD:
+                        //this.download();
+                        break;
 
-                default:
-                    this.sendStatus(ReturnCodes.INVALID_COMMAND);
+                    case QUIT:
+                        this.closeConnection();
+                        break;
 
+                    default:
+                        //this.sendStatus(ReturnCodes.INVALID_COMMAND);
+                        break;
+
+                }
             }
+            catch (Exception e) {
+                //this.sendStatus(ReturnCodes.INTERNAL_ERROR);
+            }
+
+
 
 
         }
@@ -60,24 +77,40 @@ public class ServerConnection extends Connection {
 
 
 
-    private void sendMenu() {
+    private void sendMenu() throws IOException {
+
         for(Commands c : Commands.values()){
 
-            this.sendMessage(c.getCommand());
+            this.sendStringMessage(c.getCommand());
 
         }
     }
 
-    private void listDirectory() {
-        this.sendMessage("Not implemented");
+    private void listDirectory() throws Exception{
+        File directory = new File(this.directory);
+        String[] files = directory.list();
+
+
+
+        if(files == null || files.length == 0 ) {
+            //Could it be an exception
+            this.sendStringMessage(ReturnCodes.EMPTY_DIRECTORY.getDescription());
+            return;
+        }
+
+        this.sendStringMessage(String.valueOf(files.length));
+        for(String file: files) {
+            this.sendStringMessage(file);
+        }
+
     }
 
-    private void download() {
-        this.sendMessage("Not implemented");
+/*    private void download() {
+        this.sendStringMessage("Not implemented");
     }
 
     private void upload() {
-        this.sendMessage("Not implemented");
-    }
+        this.sendStringMessage("Not implemented");
+    }*/
 
 }

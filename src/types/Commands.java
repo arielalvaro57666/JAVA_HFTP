@@ -1,9 +1,9 @@
 package types;
 
 public enum Commands {
-    LIST_DIRECTORY("list"),
-    DOWNLOAD_FILE("download"),
-    UPLOAD_FILE("upload"),
+    LIST("list"),
+    DOWNLOAD("download"),
+    UPLOAD("upload"),
     QUIT("quit"),
     DEFAULT("");
 

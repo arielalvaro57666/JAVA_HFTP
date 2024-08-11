@@ -1,18 +1,21 @@
 package common.connection;
 
+import types.ReturnCodes;
+
 import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 public class Connection {
 
     private final Socket socket;
-    private InputStream in;
-    private OutputStream out;
+    private BufferedInputStream in;
+    private BufferedOutputStream out;
 
-    public Connection(Socket socket) throws IOException {
+    public Connection(Socket socket, BufferedInputStream in_buff, BufferedOutputStream out_buff){
         this.socket = socket;
-        this.in = socket.getInputStream();
-        this.out = socket.getOutputStream();
+        this.in = in_buff;
+        this.out = out_buff;
     }
 
     protected void readMessage(String message) {
@@ -23,37 +26,27 @@ public class Connection {
      * Blocks until a message is received in the stream
      * @return The String that the stream sent
      */
-    protected String receiveMessage() {
-        try {
-            DataInputStream d_in = new DataInputStream(this.in);
+    protected String receiveStringMessage() throws IOException {
+        //ReadAllByte Wont work since doesnt get to end of stream
+        //ReadNBytes will work since it just read the ammount of bytes we say
+        //TLV Approach
 
-            return  d_in.readUTF();
+        int bytesAmount = this.in.read();
+        byte[] buffer = this.in.readNBytes(bytesAmount);
 
-        } catch (IOException e) {
-
-            throw new RuntimeException(e);
-
-        }
+        return new String(buffer, StandardCharsets.UTF_8);
     }
-
 
     // Mandarlos a una clase padre
-    protected void sendMessage(String message) {
-        try {
-            DataOutputStream d_out = new DataOutputStream(this.out);
-            d_out.writeUTF(message);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    protected void sendStringMessage(String message) throws IOException {
+        byte[] messageBytes = message.getBytes();
+        this.out.write(messageBytes.length);
+        this.out.write(messageBytes);
+        this.out.flush();
     }
 
 
-
-    protected void closeConnection(){
-        try {
-            this.socket.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    protected void closeConnection() throws IOException {
+        this.socket.close();
     }
 }

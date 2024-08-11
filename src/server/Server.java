@@ -2,7 +2,7 @@ package server;
 
 import server.serverconnection.ServerConnection;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -30,7 +30,10 @@ public class Server {
             while(true) {
                 this.client_socket = this.server_socket.accept();
 
-                ServerConnection serverConnection = new ServerConnection(this.client_socket);
+                BufferedInputStream in = new BufferedInputStream(this.client_socket.getInputStream());
+                BufferedOutputStream out = new BufferedOutputStream((this.client_socket.getOutputStream()));
+
+                ServerConnection serverConnection = new ServerConnection(this.client_socket, in, out);
                 serverConnection.menu();
             }
 
