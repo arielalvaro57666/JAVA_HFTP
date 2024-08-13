@@ -2,7 +2,6 @@ package client.clientconnection;
 
 import common.connection.Connection;
 import types.Commands;
-import types.ReturnCodes;
 
 import java.io.*;
 import java.net.Socket;
@@ -32,21 +31,23 @@ public class ClientConnection extends Connection {
 
                 //Send command
                 String request = scan();
-                this.sendStringMessage(request);
+                String[] params = request.split(" ");
+                this.sendStringMessage(params[0]);
                 //String request = scan();
-                Commands command = Commands.returnCommand(request);
+                Commands command = Commands.returnCommand(params[0]);
+
+
 
                 switch (command) {
 
                     case LIST:
                         this.listDirectory();
                         break;
-
                     case DOWNLOAD:
-                        //this.upload();
+                        this.saveFile(params[1], params[2]);
                         break;
                     case UPLOAD:
-                        //this.download();
+                        this.sendFile(params[1]);
                         break;
                     case QUIT:
                         this.closeConnection();
@@ -59,7 +60,7 @@ public class ClientConnection extends Connection {
 
             }
             catch (Exception e) {
-                System.out.println("------------Commands------------");
+                System.out.println("exploded "+ e.getMessage() );
             }
 
 
@@ -94,6 +95,22 @@ public class ClientConnection extends Connection {
             String file = this.receiveStringMessage();
             System.out.println(file);
         }
+
+    }
+
+    private void sendFile(String path) throws IOException {
+        File file = new File(path);
+        this.sendStringMessage(file.getName());
+        //Upload specified file
+        this.upload(file);
+    }
+
+    private void saveFile(String filename, String path) throws IOException {
+        //download filename local_path
+        this.sendStringMessage(filename);
+        String completePath = path + "/" + filename;
+        //Download received file
+        this.download(completePath);
 
     }
 }

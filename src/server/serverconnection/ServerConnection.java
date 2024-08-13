@@ -34,7 +34,6 @@ public class ServerConnection extends Connection {
                 String request = this.receiveStringMessage();
 
                 Commands requestCommand = Commands.returnCommand(request.toUpperCase());
-                System.out.println("Receive "+ requestCommand);
                 switch(requestCommand) {
 
                     case LIST:
@@ -42,13 +41,14 @@ public class ServerConnection extends Connection {
                         this.listDirectory();
                         break;
 
-
                     case DOWNLOAD:
-                        //this.upload();
+
+                        this.sendFile();
                         break;
 
                     case UPLOAD:
-                        //this.download();
+                        System.out.println("Receiveed UPLOADING!! ");
+                        this.saveFile();
                         break;
 
                     case QUIT:
@@ -62,7 +62,7 @@ public class ServerConnection extends Connection {
                 }
             }
             catch (Exception e) {
-                //this.sendStatus(ReturnCodes.INTERNAL_ERROR);
+                System.out.println("exploded "+ e.getMessage() );
             }
 
 
@@ -105,12 +105,20 @@ public class ServerConnection extends Connection {
 
     }
 
-/*    private void download() {
-        this.sendStringMessage("Not implemented");
+    private void sendFile() throws IOException {
+        String filename = this.receiveStringMessage();
+        File file = new File(this.directory + "/" + filename);
+
+        //Upload specified file
+        this.upload(file);
     }
 
-    private void upload() {
-        this.sendStringMessage("Not implemented");
-    }*/
+    private void saveFile() throws IOException {
+        String filename = this.receiveStringMessage();
+        String path = this.directory + "/" + filename;
+        //Download received file
+        this.download(path);
+
+    }
 
 }

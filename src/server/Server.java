@@ -39,7 +39,7 @@ public class Server {
 
 
         }catch (IOException e){
-            System.out.println("KABOOM1");
+            System.out.println("KABOOM1 " + e.getMessage());
         }
 
 
